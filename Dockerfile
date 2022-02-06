@@ -1,5 +1,6 @@
 FROM ubuntu:18.04
 
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:avsm/ppa && \
@@ -12,7 +13,9 @@ RUN apt-get update && \
       aspcud \
       vim \
       gcc \
-      m4 && \
+      m4 \
+      curl \
+      git && \
     echo "yes" >> /tmp/yes.txt && \
     opam init --disable-sandboxing -y < /tmp/yes.txt && \
     opam switch create 4.12.0 && \
@@ -34,6 +37,34 @@ RUN mkdir bin && \
     ln -s bin/genprog bin/repair && \
     mv src/distserver bin/distserver && \
     mv src/nhtserver bin/nhtserver
+
+# Download synapser
+
+WORKDIR /opt/
+RUN git clone https://github.com/epicosy/synapser
+
+# Install synapser dependencies
+
+WORKDIR /opt/synapser
+RUN add-apt-repository ppa:deadsnakes/ppa -y && \ 
+    apt install -y python3.8 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 2 && \
+    apt-get install -y python3-distutils python3.8-dev && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3 get-pip.py 2>&1
+
+# Install synapser
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
+    apt-get install -y postgresql libpq-dev && pip3 install -r requirements.txt && \
+    pip3 install . && \
+    su -l postgres -c "/etc/init.d/postgresql start && psql --command \"CREATE USER synapser WITH SUPERUSER PASSWORD 'synapser123';\" && \
+    createdb synapser" && \ 
+    mkdir -p ~/.synapser/config/plugins.d && mkdir -p ~/.synapser/plugins/tool && \
+    cp config/synapser.yml ~/.synapser/config/ && \
+    cp -a config/plugins/.  ~/.synapser/config/plugins.d && \
+    cp -a synapser/plugins/.  ~/.synapser/plugins/tool
+
 
 ENV PATH "/opt/genprog/bin:${PATH}"
 
