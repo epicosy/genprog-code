@@ -2,6 +2,9 @@ genprog:
   program: "genprog"
   path: "/opt/genprog/bin"
   help: '--help'
+  api_cmds:
+    --compiler-command: build
+    --test-command: test 
   args:
     --search: "ga"
     --crossover: "subset"
