@@ -19,13 +19,14 @@ class GenProg(ToolHandler):
 
     def repair(self, signals: dict, repair_request: RepairRequest) -> RepairCommand:
         manifest_file = repair_request.working_dir / 'manifest.txt'
-        
+
         with manifest_file.open(mode='w') as mf:
             mf.write('\n'.join(repair_request.manifest))
 
         self.repair_cmd.add_arg(opt='--program', arg=str(manifest_file))
         self.repair_cmd.add_arg(opt='--prefix', arg=str(repair_request.build_dir))
         self.repair_cmd.add_arg(opt='--rep', arg="cilpatch" if len(repair_request.manifest) > 1 else "c")
+        self.repair_cmd.add_args(repair_request.args)
 
         for opt, arg in signals.items():
             self.repair_cmd.add_arg(opt=opt, arg=arg)
