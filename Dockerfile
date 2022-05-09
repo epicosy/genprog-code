@@ -66,7 +66,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
     cp -a synapser/plugins/.  ~/.synapser/plugins/tool
 
 WORKDIR /tmp/plugin
-ADD genprog.syn.py .
+
+ADD genprog.syn.py . 
 ADD genprog.syn.yml .
 # Install genprog plugin for synapser
 RUN synapser plugin install -d /tmp/plugin
